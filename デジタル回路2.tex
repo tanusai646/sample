@@ -1,0 +1,1413 @@
+\documentclass[dvipdfmx]{jsarticle}
+\usepackage[dvipdfmx]{graphicx}
+\usepackage{pdfpages}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{multirow}
+\usepackage{color}
+\usepackage{ulem}
+\usepackage{here}
+
+\newcommand{\Add}[1]{\textcolor{red}{#1}}
+\newcommand{\Erase}[1]{\textcolor{red}{\sout{\textcolor{black}{#1}}}}
+\newcommand{\ctext}[1]{\raise0.2ex\hbox{\textcircled{\scriptsize{#1}}}}
+\makeatletter % プリアンブルで定義開始
+
+% 表示文字列を"図"から"Figure”へ，"表"から"Table”へ
+\renewcommand{\figurename}{図}
+\renewcommand{\tablename}{表}
+
+% 図，表番号を"<章番号>.<図番号>” ，"<章番号>.<表番号>” へ
+\renewcommand{\thefigure}{\thesection-\arabic{figure}}
+\renewcommand{\thetable}{\thesection-\arabic{table}}
+
+% 章が進むごとに図番号をリセットする
+\@addtoreset{figure}{section}
+\@addtoreset{table}{section}
+
+\makeatother % プリアンブルで定義終了
+
+\begin{document}
+
+\title{デジタル回路}
+\author{222C1021 今村優希}
+\maketitle
+\newpage
+
+\section{目的}
+
+コンピュータ内部で行われている複雑な計算を0と1のみで行っている。
+その計算を論理計算と言い、その回路が論理回路である。
+この実験は、NOT、AND、OR等の論理回路やフリップフロップの基本的な動作や構成を学ぶことを目的としている。
+
+\section{原理}
+
+今回の実験では論理回路を使用する。したがって、ブール代数、ゲート等を使用する。それぞれについて説明する。
+
+\subsection{ブール代数}
+
+ブール代数とは、Bを少なくとも2つの要素0と1を持つ集合とする。
+二項演算子$\vee$と$\cdot$、及び、1つの単項演算子¯が定義サれていて、Bの任意の要素$a,b,c$に対して、
+すべての等式をみたす時に、この代数系$<$$B$,$\vee$,$\cdot$,¯,0,1$>$をブール代数と言っている。
+
+\subsection{論理関数}
+論理関数とは、論理演算を行う回路のことである。基本的な論理機能に、AND、OR、NOT、NAND、NOR、EXORがある。
+それぞれの記号を図\ref{fig:2-1}に示す。また、その演算の真理値表を表\ref*{tb:hyou1}に示す。\\
+
+\textgt{AND演算}は入力値が全て1のときに、出力値が1となり、他の状況では0が出力される。
+\textgt{OR演算}は、入力値に1つでも1があるときに出力値が1となる。すべての入力値が0出会った場合、0が出力される。
+\textgt{NOT演算}では、入力値と反対の値を出力している。
+\textgt{NAND演算}では、入力値が全て1のときに出力値が1となり、それ以外では1が出力される。
+\textgt{NOR演算}では、入力値が全て0のときに出力値が1となり、それ以外では0が出力サれる。
+\textgt{EXOR演算}では、入力値の1の数が奇数のときに1が出力され、偶数のときは0が出力される。
+
+\begin{figure}[hbtp]
+  \begin{center}
+    \includegraphics*[scale=0.6]{photo/2-1.png}
+  \end{center}
+  \caption{種々の論理演算の記号}
+  \label{fig:2-1}
+\end{figure}
+
+\begin{table}[hbtp]
+  \caption{論理演算の動作}
+  \centering
+  \begin{tabular}{|cc||c|c|c|c|c|c|} \hline
+    \multicolumn{2}{|c||}{入力} & AND & OR & NOT & NAND & NOR & EXOR \\
+    $A$ & $B$ & $A \cdot B$ & $A \vee B$ & $\overline{A}$ & $\overline{A \cdot B}$ & $\overline{A \vee B}$ & $A \oplus B$ \\ \hline
+    0 & 0 & 0 & 0 & 1 & 1 & 1 & 0 \\ \hline
+    0 & 1 & 0 & 1 & 1 & 1 & 0 & 1 \\ \hline
+    1 & 0 & 0 & 1 & 0 & 1 & 0 & 1 \\ \hline
+    1 & 1 & 1 & 1 & 0 & 0 & 0 & 0 \\ \hline
+  \end{tabular}
+  \label{tb:2-1}
+\end{table}
+
+\subsection{半加算器・全加算器}
+全加算器と半加算器について、「図解 コンピュータ概論」\cite[p.98]{computer}には以下のように書かれている。
+\begin{quote}
+  2進数の加算において、再開桁のみの加算を実行する回路を半加算器という。
+  これに対し、下位桁からの桁上げも含めて計算を実行する回路を全加算器という。
+\end{quote}
+したがって、半加算器は加算の過程において、最初の桁のみの加算に使用され、
+全加算器はそれ以降の加算を繰り上がりを含めて行っていることがわかる。\\
+半加算器について、加算を行う2進数の最下位桁をA、Bとし、和をS、繰り上がりをCとすると表\ref{tb:2-2}のような真理値表になる。\\
+\begin{table}[hbtp]
+  \caption{半加算器の動作}
+  \centering
+  \begin{tabular}{|c|c||c|c|} \hline
+    \multicolumn{2}{|c||}{入力} & \multicolumn{2}{c|}{出力} \\ \hline
+    $A$ & $B$ & $C$ & $S$ \\ \hline
+    0 & 0 & 0 & 0 \\ \hline
+    0 & 1 & 0 & 1 \\ \hline
+    1 & 0 & 0 & 1 \\ \hline
+    1 & 1 & 1 & 0 \\ \hline
+  \end{tabular}
+  \label{tb:2-2}
+\end{table}
+この真理値表から論理式を作成すると(\ref*{eq:1})(\ref*{eq:2})の数式になる。
+また、論理回路は図\ref*{fig:2-2}ようなものになる。\\
+
+\begin{align}
+  S &= \overline{A} \cdot B + A \cdot \overline{B} = A \oplus B \label{eq:1}\\
+  C &= A \cdot B \label{eq:2}
+\end{align}
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[]{photo/2-2.png}
+  \end{center}
+  \caption{半加算器}
+  \label{fig:2-2}
+\end{figure}
+
+全加算器においては、繰り上がりを含めて加算を行わないといけないため入力が3つになる。
+加算を行う2進数のある桁の値を$A$、$B$とし、繰り上がりに使用する値を$C_{in}$とする。
+出力は、和を$S$とし、繰り上げを$C_{out}$とおく。その時の真理値表は以下のようになる。
+
+\begin{table}[hbtp]
+  \caption{全加算器の動作}
+  \centering
+  \begin{tabular}{|c|c|c||c|c|} \hline
+    \multicolumn{3}{|c||}{入力} & \multicolumn{2}{c|}{出力} \\ \hline
+    $A$ & $B$ & $C_{in}$ & $C_{out}$ & $S$ \\ \hline
+    0 & 0 & 0 & 0 & 0 \\ \hline
+    0 & 0 & 1 & 0 & 1 \\ \hline
+    0 & 1 & 0 & 0 & 1 \\ \hline
+    0 & 1 & 1 & 1 & 0 \\ \hline
+    1 & 0 & 0 & 0 & 1 \\ \hline
+    1 & 0 & 1 & 1 & 0 \\ \hline
+    1 & 1 & 0 & 1 & 0 \\ \hline
+    1 & 1 & 1 & 1 & 1 \\ \hline
+  \end{tabular}
+  \label{tb:table10}
+\end{table}
+
+この真理値表から以下のような論理式と論理回路を作成する。
+論理式は以下のようになる。
+
+\begin{align}
+  S &= \overline{A} \cdot \overline{B} \cdot C_{in} \vee A \cdot \overline{B} \cdot \overline{C_{in}} \vee A \cdot \overline{B} \cdot \overline{C_{in}} \vee A \cdot B \cdot C_{in} \label{eq:3}\\
+  C &= \overline{A} \cdot B \cdot C_{in} \vee A \cdot \overline{B} \cdot C_{in} \vee A \cdot B \cdot \overline{C_{in}} \vee A \cdot B \cdot C_{in} \label{eq:4}
+\end{align}
+(\ref*{eq:4})の式を簡単化したものが(\ref*{eq:5})である。
+\begin{align}
+  C = A \cdot B \vee B \cdot C_{in} \vee C_{in} \cdot A \label{eq:5}
+\end{align}
+この倫理式から回路を作成すると、図\ref*{fig:2-3}のようになる。
+
+\begin{figure*}[h]
+  \begin{center}
+    \includegraphics[]{photo/2-3.png}
+  \end{center}
+  \caption{全加算器}
+  \label{fig:2-3}
+\end{figure*}
+
+\subsection{フリップ・フロップ}
+
+フリップフロップに関して、「図解 コンピュータ概論」\cite[p.106]{computer}において
+
+\begin{quote}
+  順序回路は組み合わせ回路と記憶回路から構成されるが、そこに用いられている記憶回路の代表的なものとして、フリップフロップ(略してFFと書く)がある。
+  これは出力を入力側に戻す(フィードバック)機構を用いて、２つの安定状態("0"と"1")を取ることができるように構成された回路である。
+\end{quote}
+と記述してある。したがってフリップフロップ(以下FFと略す)はほとんどの計算機に使用されているものである。
+FFにも様々な種類が存在しする。例えば、リセット($R$)とセット($S$)のための2つの入力端子と2つの出力端子($Q$$\overline{Q}$)をもつRS-FF、
+RS-FFの禁止行為を修正したJK-FF、クロックパルスが加わることでその時の入力と同じものが出力されるD-FF、トリガが入るごとに出力が反転するT-FFがある。\\
+今回の実験で使用するFFは主にRS-FFであるため、このFFの説明を行う。
+
+\subsection*{RS-フリップフロップ}
+上記したように、RS-FFはリセット$R$とセット$S$の2つの入力と、$Q\overline{Q}$の2つの出力があり、以下の真理値表のような動作を行う。
+セット信号が入れば$Q$は1、リセット信号が入ると$Q$は0、入力がなければその状態を保存する。
+その動作を真理値表\ref{tb:2-4}に示す。
+
+\begin{table}
+  \caption{RS-FFの動作}
+  \centering
+  \begin{tabular}{|c|c||c|c|c|} \hline
+    \multicolumn{2}{|c||}{入力} & \multicolumn{2}{c|}{出力} & \\ \hline
+    $R(n)$ & $S(n)$ & $Q(n+1)$ & $\overline{Q(n+1)}$ &備考\\ \hline
+    0 & 0 & $Q(n)$ & $\overline{Q(n)}$ & 出力は不変\\ \hline
+    0 & 1 & 1 & 0 & セット\\ \hline
+    1 & 0 & 0 & 1 & リセット\\ \hline
+    1 & 1 & \# & \# & 禁止\\ \hline
+  \end{tabular}
+  \label{tb:2-4}
+\end{table}
+
+\section{実験方法}
+今回の実験では、論理回路実習装置による実際の回路での実験とコンピュータによるシミュレーションの2種類の方法を2週にかけて行った。
+
+\subsection{実験方法}
+1週目ではシミュレーションを使い実験を行う。シミュレーションでは、Logismというアプリケーションを使用する。
+Logismはhttps://sourceforge.net/projects/circuit/ からダウンロードすることができる。\\
+Logismでは以下のような方法で論理回路を作成し、実行した。\\
+
+Logismのアプリを開く。左上にある”File”を開き、”New”をクリックすることで新しい論理回路の作成を始めた。
+入力の作成: 上部の四角のマークを選択し方眼上でクリック。必要な入力数の分、この動作を行った。
+出力の作成: 上部の丸のマークを選択し方眼上でクリック。入力と同じことをする。
+ゲートを作成: 左側の"Gates"というファイルを開き必要なゲートを選択。これも入出力と同じことをする。
+配線: 入出力、ゲートを配線で結んだ。
+実行: 左上の指先マークを選択。入力マークをクリックすることで入力を1や0に変更できる。そこから出力の値を観察した。\\
+
+
+2週目では、実機を用いて実験を行った。実機で用いたものは入力、出力そしてANDゲートやNANDゲート等基本的なゲートが用意されており、
+これを導線を結んで回路を構成した。
+入力のスイッチを入れたり切ったりすることで1、0を再現し、出力のランプが点灯することで出力の値を観察した。\\
+
+さらに、実験8.6「TTLの入出力特性の測定」においてオシロスコープと周波数発生装置を使用する。
+オシロスコープは赤い導線を波形を知りたい部分に接続し、黒の導線はGNDに接続した。
+CH1やCh2の波形を詳しく観察するために、画面の右側にある"VERTICAL"や"HORIZONTAL"のネジの調節を行った。
+
+\subsection{実験器具}
+以下使用した実験装置および実験環境である。
+オシロスコープ及び周波数発生装置は「TTLの入出力特性装置」で使用する。
+図\ref*{fig:2-1}と\ref*{fig:2-2}は今回使った装置である。
+
+\subsubsection*{シミュレーター}
+\begin{itemize}
+  \item 使用コンピューター: Windows11/ Microsoft Windows version22H2
+  \item 使用アプリケーション: Logisim /version 2.7.1
+\end{itemize}
+
+\subsubsection*{実機}
+\begin{itemize}
+  \item 装置: 論理回路実験装置
+  \item オシロスコープ: IWATSU DIGITAL OSCILLOSCOPE DS-5102B
+  \item 周波数発生装置: TEXIO/ AFG-2005
+\end{itemize}
+
+\begin{figure}[hbtp]
+  \centering
+  \begin{minipage}{0.5\columnwidth}
+    \centering
+    \includegraphics*[scale=0.1]{photo/3-1.jpg}
+    \label{fig:3-1}
+    \caption{使用したオシロスコープ}
+  \end{minipage}
+  \begin{minipage}{0.4\columnwidth}
+    \centering
+    \includegraphics*[scale=0.1]{photo/3-2.jpg}
+    \caption{使用した周波数発生装置}
+    \label{fig:3-2}
+  \end{minipage}
+\end{figure}
+
+
+
+\section{予習・実験・考察}
+
+\subsection{実験8.1 論理式の簡単化}
+
+\subsubsection{実験1 $A\vee\overline{A}\cdot B$}
+
+\paragraph{実験1の予習}
+表\ref*{tb:4-1}は予習で作成した真理値表である。一番右側の$A \vee B$は予習で簡単化したものの真理値表である。
+\begin{table}[hbtp]
+  \caption{実験1 予習}
+  \centering
+  \begin{tabular}{|c|c||c|c|c|c|} \hline
+    \multicolumn{2}{|c||}{入力} & \multicolumn{4}{c|}{予習} \\ \hline
+    $A$ & $B$ & $\overline{A}$ & $\overline{A} \cdot B$ & $A \vee \overline{A} \cdot B$ & $A \vee B$\\ \hline
+    0 & 0 & 1 & 0 & 0 & 0\\ \hline
+    0 & 1 & 1 & 1 & 1 & 1\\ \hline
+    1 & 0 & 0 & 0 & 1 & 1\\ \hline
+    1 & 1 & 0 & 0 & 1 & 1\\ \hline
+  \end{tabular}
+  \label{tb:4-1}
+\end{table}\\
+
+また、簡単化の経緯を数式1に記載している。
+
+\begin{align}
+  \intertext{数式1}
+  X &= A \vee \overline{A} \cdot B \notag\\
+  &= (A \vee \overline{A})(A \vee B) \tag*{(分配率)}\\
+  &= 1 \cdot (A \vee B) \tag*{(相補率)}\\
+  &= A \vee B \tag*{(相補率)}
+\end{align}\\
+
+以上のような式変更を経由して簡単化される。
+
+\paragraph{実験1の実験結果}
+シミュレーターで作成した論理回路は図\ref*{fig:4-1}である。
+上部は$A \vee \overline{A} \cdot B$の論理回路で、下部は簡単化した$A \vee B$の論理回路である。
+図\ref*{fig:4-2}に実機で作成した回路を記載している。
+図\ref*{fig:4-3}が簡単化した回路である。
+実機においてどちらの回路でも、入力の0番がAを1番がBである。
+表\ref*{tb:4-2}に実験結果の真理値表を記載する。
+この回路を実行した際の真理値表を表\ref*{tb:4-2}に記載する。
+シミュレーターの結果及び、実機の結果の右側の$A \vee B$は簡単化したものである。
+
+\begin{figure}[hbtp]
+  \begin{center}
+    \includegraphics*[]{photo/4-1.png}
+  \end{center}
+  \caption{実験1 論理回路}
+  \label{fig:4-1}
+\end{figure}
+
+\begin{figure}[hbtp]
+  \begin{center}
+    \includegraphics[scale=0.18]{photo/4-2.jpg}
+  \end{center}
+  \caption{\Add{実験1 実機における簡単化する前の回路}}
+  \label{fig:4-2}
+\end{figure}
+
+\begin{figure}[tbtp]
+  \begin{center}
+    \includegraphics[scale=0.21, angle=90]{photo/4-3.jpg}
+  \end{center}
+  \caption{\Add{実験1 実機における簡単化した回路}}
+  \label{fig:4-3}
+\end{figure}
+
+\begin{table}[hbtp]
+  \caption{実験1 結果}
+  \centering
+  \begin{tabular}{|c|c||c|c|c|c||c|c|} \hline
+    \multicolumn{2}{|c||}{入力} & \multicolumn{4}{c||}{シミュレーターの結果} & \multicolumn{2}{c|}{実機の結果 }\\ \hline
+    $A$ & $B$ & $\overline{A}$ & $\overline{A} \cdot B$ & $A \vee \overline{A} \cdot B$ & $A \vee B$ & $A \vee \overline{A} \cdot B$ & $A \vee B$ \\ \hline
+    0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 \\ \hline
+    0 & 1 & 1 & 1 & 1 & 1 & 1 & 1 \\ \hline
+    1 & 0 & 0 & 0 & 1 & 1 & 1 & 1 \\ \hline
+    1 & 1 & 0 & 0 & 1 & 1 & 1 & 1 \\ \hline
+  \end{tabular}
+  \label{tb:4-2}
+\end{table}
+
+\paragraph{実験1の考察}
+
+予習の簡単化の経緯及び簡単化した式は、実験の結果より正しかったものであると確認できた。
+$A \vee \overline{A} \cdot B$と$A \vee B$は同じこと行っているといえる。
+\Add{したがって、簡単化する前の回路はゲート数が多く、誤動作を生じる可能性があるため、良い回路とは言えないと考える。
+このことから、できるだけ簡単化し、ゲート数を少なくすることが論理回路を作成する上で求められると言える。}
+
+\subsubsection{実験2 $A \cdot (\overline{A} \vee B)$}
+レポートの都合上ページ\pageref*{Aiu}以降に記入した。
+
+\subsubsection{実験3 $A \cdot B \vee \overline{A} \cdot B \vee A \cdot \overline{B}$}
+レポートの都合上ページ\pageref*{Aiu}以降に記入した。
+
+\subsection{実験8.2 加算機の構成}
+
+\subsubsection{実験1 半加算器の実験}
+(概要)\\
+5つのNANDのみを満ちいて半加算器を構成し、8.1同様に行う。
+
+\paragraph{実験1の予習}
+以下の図\ref*{fig:4-4-1}は予習で作成した半加算器\Erase{をシミュレーターで再現したもの}である。\\
+\Erase{シミュレーターの実験はこの回路を用いて行った。}
+
+\begin{figure}[hbtp]
+  \begin{center}
+    \includegraphics*[scale=0.2]{photo/4-4-1.jpg}
+  \end{center}
+  \caption{\Add{実験1 予習で作成した半加算器}}
+  \label{fig:4-4-1}
+\end{figure}
+
+\paragraph{実験1の結果}
+\Add{シミュレーターで再現したのが図\ref*{fig:4-4}である。}
+実機で再現したものが図\ref*{fig:4-5}である。
+実機において、入力の0番がA、1番がB、出力の0番がC、1番がSにそれぞれ対応している。
+さらに表\ref*{tb:4-3}はこのシミュレーター及び実機で実験を行った際の真理値表である。\\
+Sが和を表しており、Cは繰り上がりがあるかを表している。
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[scale=0.9]{photo/4-4.png}
+  \end{center}
+  \caption{実験1 作成した半加算器}
+  \label{fig:4-4}
+\end{figure}
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[angle=90,scale=0.15]{photo/4-5.jpg}
+  \end{center}
+  \caption{実験1 実機で作成した半加算器}
+  \label{fig:4-5}
+\end{figure}
+
+\begin{table}[h]
+  \caption{実験1 結果}
+  \centering
+  \begin{tabular}{|c|c||c|c||c|c|} \hline
+    \multicolumn{2}{|c||}{入力} & \multicolumn{2}{c||}{シミュレーターの結果} & \multicolumn{2}{c|}{実機の結果} \\ \hline
+    $A$ & $B$ & $C$ & $S$ & $C$ & $S$\\ \hline
+    0 & 0 & 0 & 0 & 0 & 0\\ \hline
+    0 & 1 & 0 & 1 & 0 & 1\\ \hline
+    1 & 0 & 0 & 1 & 0 & 1\\ \hline
+    1 & 1 & 1 & 0 & 1 & 0\\ \hline
+  \end{tabular}
+  \label{tb:4-3}
+\end{table}
+
+\paragraph{実験1の考察}
+
+原理でも説明したように、半加算器は1bit同士の加算を行う際に使用される。
+
+今回の例ではNANDのみを用いて半加算器を作成したが、繰り上がりと和はしっかりと行われていることが真理値表から確認できた。\\
+NANDのみで半加算器を作成できる理由を数式2、数式3で証明する。
+\label{syoumei}
+\begin{align}
+  \intertext{数式2} 
+  S &= A \cdot \overline{B} \vee \overline{A} \cdot B \notag \\
+  &= A \cdot \overline{A} \vee A \cdot \overline{B} \vee \overline{A} \cdot B \vee B \cdot \overline{B} \tag{相補率}\\
+  &= A \cdot (\overline{A} \vee \overline{B}) \vee B \cdot (\overline{A} \vee \overline{B}) \tag{分配率} \\
+  &= A \cdot \overline{A \cdot B} \vee B \cdot \overline{A \cdot B} \tag{ド・モルガン率}\\
+  &= \overline{\overline{A \cdot \overline{A \cdot B}}} \vee \overline{\overline{B \cdot \overline{A \cdot B}}} \tag{ド・モルガン率}\\
+  &= \overline{\overline{A \cdot \overline{A \cdot B}} \cdot \overline{B \cdot \overline{A \cdot B}}} \tag{ド・モルガン率}\\
+  \intertext{数式3}
+  C &= A \cdot B \notag \\
+  &= A \cdot B \vee A \cdot B \tag{べき等率}\\
+  &= \overline{\overline{A \cdot B}} \vee \overline{\overline{A \cdot B}} \tag{復元率}\\
+  &= \overline{\overline{A \cdot B} \cdot \overline{A \cdot B}} \tag{ド・モルガン率}
+\end{align} 
+
+以上より、上記の図\ref{fig:4-4}、\ref{fig:4-5}で半加算器を再現することができる。
+
+\subsubsection{実験2 全加算器の実験}
+(概要)\\
+半加算器2つとゲート回路1つを用いて全加算器を構成する。
+
+\paragraph{実験2の予習}
+図\ref{fig:4-6}は予習で作成した全加算器をシミュレーターで再現したものである。シミュレーターの実験はこの回路を用いて行った。
+
+\paragraph{実験2の結果}
+実機で再現を行ったものが図\ref{fig:4-7}である。
+さらに表\ref{tb:4-4}はこのシミュレーター及び実機で実験を行った際の真理値表である。
+実機では都合上、NAND回路を用いずに、XOR回路及びAND回路を用いて構成した。
+また、入力ポートの0番がA、1番がB、2番が$C_{in}$、出力ポートの0番が$C_{out}$、1番がSに対応している。
+
+\begin{figure}[hbtp]
+  \begin{center}
+    \includegraphics*[scale=0.8]{photo/4-6.png}
+  \end{center}
+  \caption{実験2 シミュレーターで作成した全加算器}
+  \label{fig:4-6}
+\end{figure}
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[angle=90,scale=0.2]{photo/4-7.jpg}
+  \end{center}
+  \caption{実験2 実機で作成した全加算器}
+  \label{fig:4-7}
+\end{figure}
+
+\begin{table}[hbtp]
+  \caption{実験2 結果}
+  \centering
+  \begin{tabular}{|c|c|c|c|c|c|c|} \hline
+    \multicolumn{3}{|c|}{入力の結果} & \multicolumn{2}{c|}{シミュレーターの結果} & \multicolumn{2}{c|}{実機の結果} \\ \hline
+    $A$ & $B$ & $C_{in}$ & $C_{out}$ & $S$ & $C_{out}$ & $S$\\ \hline
+    0 & 0 & 0 & 0 & 0 & 0 & 0\\ \hline
+    0 & 0 & 1 & 0 & 1 & 0 & 1\\ \hline
+    0 & 1 & 0 & 0 & 1 & 0 & 1\\ \hline
+    0 & 1 & 1 & 1 & 0 & 1 & 0\\ \hline
+    1 & 0 & 0 & 0 & 1 & 0 & 1\\ \hline
+    1 & 0 & 1 & 1 & 0 & 1 & 0\\ \hline
+    1 & 1 & 0 & 1 & 0 & 1 & 0\\ \hline
+    1 & 1 & 1 & 1 & 1 & 1 & 1\\ \hline
+  \end{tabular}
+  \label{tb:4-4}
+\end{table}
+
+\paragraph{実験2の考察}
+
+原理でも説明したように、繰り上げ入力付きの1ビットの加算機である。
+Sは和を表しており、Cは繰り上げを表している。
+したがって真理値表を見ると、1が一つだけ入力されると、$S$:1が出力される。
+1が2つ入力されると、$C$:1が出力される。さらに、1が3つ入力されると、$S$、$C$どちらとも1が出力された。
+
+\subsection{実験8.3 エンコーダ、デコーダの構成}
+
+\subsubsection{実験2 デコーダの実験}
+(概要)\\
+4-2エンコーダで符号化された信号を符号化するデコーダを構成する。
+
+\paragraph{実験2の予習、結果}
+予習で作成した回路をシミュレーターで再現したものが図\ref{fig:4-8}である。
+予習をもとに実機で再現したものが以下の図\ref{fig:4-9}である。
+実機において、入力ポートの0、1番が$B_1$、$B_0$、出力ポートの0~3番が$D_0$~$D_3$の4つに対応している。
+入力が2進数、出力が10進数を表している。
+更にシミュレーター及び実機で実験した際の真理値表が表\ref{tb:4-5}である。\\
+
+\begin{figure}[hbtp]
+  \begin{center}
+    \includegraphics*[scale=0.8]{photo/4-8.png}
+  \end{center}
+  \caption{実験2 シミュレーター作成した4-2エンコーダ}
+  \label{fig:4-8}
+\end{figure}
+
+\begin{figure}[hbtp]
+  \begin{center}
+    \includegraphics*[scale=0.15, angle=90]{photo/4-9.jpg}
+  \end{center}
+  \caption{実験2 実機で作成した4-2エンコーダ}
+  \label{fig:4-9}
+\end{figure}
+
+\begin{table}[hbtp]
+  \caption{実験2 結果}
+  \centering
+  \begin{tabular}{|c|c||c|c|c|c||c|c|c|c|} \hline
+    \multicolumn{2}{|c||}{入力} & \multicolumn{4}{c||}{シミュレーターの結果} & \multicolumn{4}{c|}{実機の結果}\\ \hline
+    $B_1$ & $B_0$ & $D_0$ & $D_1$ & $D_2$ & $D_3$ & $D_0$ & $D_1$& $D_2$ & $D_3$ \\ \hline
+    0 & 0 & 1 & 0 & 0 & 0 & 1 & 0 & 0 & 0 \\ \hline
+    0 & 1 & 0 & 1 & 0 & 0 & 0 & 1 & 0 & 0 \\ \hline
+    1 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 1 & 0 \\ \hline
+    1 & 1 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 1 \\ \hline
+  \end{tabular}
+  \label{tb:4-5}
+\end{table}
+
+結果より、この回路を用いると2進数で入力された値が10進数で正しく出力されていることが確認できる。
+この回路では以下のような計算が行われている。\\
+\begin{align*}
+  D_0 &= \overline{B_1} \cdot \overline{B_0}\\
+  D_1 &= \overline{B_1} \cdot B_0\\
+  D_2 &= B_1 \cdot \overline{B_0}\\
+  D_3 &= B_1 \cdot B_0
+\end{align*}
+
+例えば$D_0$では、10進数における0を表しているため、$B_1$$B_0$がともに0のときに$D_0$が1と出力されるようになっている。
+
+\subsection{実験8.4 マルチプレクサ、デマルチプレクサの構成}
+実験8.4はレポートの都合上、ページ\pageref*{Aiu}以降に記載している。
+
+\subsubsection{表14のマルチプレクサを構成し、8.1同様に実験を行う}
+
+\subsubsection{表15のデマルチプレクサを構成し、8.1同様に実験を行う}
+
+\subsubsection{表16に示すマルチプレクサを構成する}
+
+\subsubsection{表17に示すデマルチプレクサを構成する}
+
+\newpage
+
+\subsection{実験8.5 RS-フリップフロップの構成}
+
+\subsubsection{実験1 RS-FF}
+(概要)\\
+RS-FFを構成し、表18、図18の動作をすることを確認する。表18、図18は参考文献を参照。
+
+\paragraph{実験1の結果}
+
+入力を$RS$、出力を$XY$としたときの回路をシミュレーター及び、実機で作成したのは\ref{fig:4-10}、図\ref{fig:4-11}である。
+実機において、入力の0番が$R$、1番が$R$、出力の0番が$X$、1番が$Y$である。
+そして、その回路を実行した結果を真理値表にまとめたものが表\ref{tb:4-6}である。
+
+\begin{figure}[hbtp]
+  \begin{center}
+    \includegraphics*[]{photo/4-10.png}
+  \end{center}
+  \caption{実験1 作成したRS-FF}
+  \label{fig:4-10}
+\end{figure}
+
+\begin{figure}[hbtp]
+  \begin{center}
+    \includegraphics*[angle=90,scale=0.15]{photo/4-11.jpg}
+  \end{center}
+  \caption{実験1 実機で作成したRS-FF}
+  \label{fig:4-11}
+\end{figure}
+
+\begin{table}[hbtp]
+  \caption{実験1 結果}
+  \centering
+  \begin{tabular}{|c|c||c|c||c|c|} \hline
+    \multicolumn{2}{|c||}{入力} & \multicolumn{2}{c||}{実験結果シミュレーター} & \multicolumn{2}{c|}{実験結果実機} \\ \hline
+    $R$ & $S$ & $X$ & $Y$ & $X$ & $Y$ \\ \hline
+    0 & 0 & 0 & 0 & 0 & 0 \\ \hline
+    1 & 0 & 0 & 1 & 0 & 1 \\ \hline
+    1 & 1 & 1 & 1 & 1 & 1 \\ \hline
+    0 & 1 & 1 & 0 & 1 & 0 \\ \hline
+    0 & 0 & 1 & 0 & 1 & 0 \\ \hline
+  \end{tabular}
+  \label{tb:4-6}
+\end{table}
+
+\paragraph{実験1の考察}
+
+実験結果から、$RS$の入力が00のときに、出力が2種類あることがわかった。
+入力する順番を交換しながら観察してみると、$RS$の入力01、10のときに出力されている値と同じ値が返されていることがわかった。
+要するに、一つ前の出力値を保存していることがわかった。
+ただ、禁止行為であるはずの入力($RS$=11)において次入力にて不具合が見られなかった。
+その原因として、同時に$RS$が同時に00に変わることがなければ不具合は起きないのではないかと考えた。
+
+\subsubsection{実験2 NORをNANDに置き換える}
+(概要)\\
+実験で作成したRS-FFのNORをNANDに置き換えた上で、図、表、ダイヤグラムを作成する。
+
+\paragraph{実験2の結果}
+
+実験1で作成したNORをNAND回路に変更したものをシミュレーター及び実機で作成したのが図\ref{fig:4-12}、図\ref{fig:4-13}である。
+実機において、入力の0番がR、1番がS、出力の0番がX、1番がYである。
+その回路を実行した結果を真理値表にまとめたものが表\ref{tb:4-7}である。\\
+
+\begin{figure}[hbtp]
+  \begin{center}
+    \includegraphics*[]{photo/4-12.png}
+  \end{center}
+  \caption{実験2 NORをNANDに変更した回路}
+  \label{fig:4-12}
+\end{figure}
+
+\begin{figure}
+  \begin{center}
+    \includegraphics*[scale=0.15]{photo/4-13.jpg}
+  \end{center}
+  \caption{実験2 実機で作成した回路}
+  \label{fig:4-13}
+\end{figure}
+
+\begin{table}[hbtp]
+  \caption{実験2 結果}
+  \centering
+  \begin{tabular}{|c|c||c|c||c|c|} \hline
+    \multicolumn{2}{|c||}{入力} & \multicolumn{2}{c||}{実験結果シミュレーター} & \multicolumn{2}{c|}{実験結果実機} \\ \hline
+    $R$ & $S$ & $X$ & $Y$ & $X$ & $Y$ \\ \hline
+    0 & 0 & 1 & 1 & 1 & 1 \\ \hline
+    1 & 0 & 0 & 1 & 0 & 1 \\ \hline
+    1 & 1 & 0 & 1 & 0 & 1 \\ \hline
+    0 & 1 & 1 & 0 & 1 & 0 \\ \hline
+    1 & 1 & 1 & 0 & 1 & 0 \\ \hline
+  \end{tabular}
+  \label{tb:4-7}
+\end{table}
+
+この結果から以下の表\ref{tb:4-8}ような関係が言える。
+この関係からダイヤグラムを作成したものが図\ref{fig:4-14}である。
+ダイヤグラムでは、($N$,$N$)がある状態からの$RS$の入力に対応している。
+
+\begin{table}[hbtp]
+  \caption{実験2 各状態における入出力の値}
+  \centering
+  \begin{tabular}{|c|c|c|c|c|} \hline
+    安定状態1 & 安定状態2 & 過度状態1 & 過度状態2 & 禁止状態 \\ \hline
+    $R$:1 $X$:1 & $R$:1 $X$:0 & $R$:1 $X$:0 & $R$:0 $X$:1 & $R$:0 $X$:1 \\
+    $S$:1 $Y$:0 & $S$:1 $Y$:1 & $S$:0 $Y$:1 & $S$:1 $Y$:0 & $S$:0 $Y$:1 \\ \hline
+  \end{tabular}
+  \label{tb:4-8}
+\end{table}
+
+\begin{figure}
+  \begin{center}
+    \includegraphics*[scale=0.6]{photo/4-14.png}
+  \end{center}
+  \caption{実験2 ダイヤグラム}
+  \label{fig:4-14}
+\end{figure}
+
+\clearpage
+
+\paragraph{実験2の考察}
+\label{kousatu2}
+まず、図\ref*{fig:4-10}(NORを使用したRS-FF)と図\ref*{fig:4-12}(NANDを利用したRS-FF)の出力を比較してみると、安定状態と禁止状態の$RS$の入力が逆であった。
+逆に、過度状態における入力、出力は同じであったため、NORをNANDに変えた回路でもRS-FFとして機能することがわかった。\\
+
+なぜこの様になるのか考えてみる。どちらの原因にもNOR、NANDの出力の仕方が関係していることがわかった。
+\ref*{tb:2-1}の真理値表を見てみると、入力の(0,0)(1,1)のときNOR、NANDの出力が同じである。
+過度状態では、全てのゲートのファンインの値が全く同じであるために同じ動作をすることが考えられる。
+例えば、$R$を1にしたとき、NORにおいて、$X$の出力に直接関わっているゲートのファンインはどちらも1である。
+NANDにおける回路でも同様で、$X$の出力に直接関わっているゲートのファンインはどちらも1であった。
+このことから、過度状態の入力、出力は一致すると考えられる。
+また、安定状態と禁止状態の入力が逆になることも真理値表から言える。
+NORでは1が1つでも入力されると0を出力してしまう。
+そのことから($R,S$)=(0,0)のとき、ゲートからの出力は絶対に0になってしまい、禁止状態になる。
+NANDでは0が1つでも入力されると1を出力してしまう。
+そのことから($R,S$)=(1,1)のとき、ゲートからの出力は絶対に1になってしまい、禁止状態になる。
+よって禁止状態が逆になることが考えられる。
+逆に安定状態に関していうと、NORにおいて($R,S$)=(1,0)のときから($R,S$)=(0,0)に変化したとしても、$R$につながるゲートにはすでに1が入力されており、出力が変わらない。
+NANDにおいて($R,S$)=(1,0)のときから($R,S$)=(1,1)に変化したとしても、$S$につながるゲートにはすでに0が入力されており、出力が変わらない。
+安定状態、禁止状態それぞれに注目して、安定状態と禁止状態が逆になる理由を考えた。
+
+\subsubsection{実験3 同期式RS-FF} \label{4.6.3}
+(概要)\\
+図19(このレポートでは、図\ref{fig:4-15})の回路を構成して、実験3の入出力に対する出力値を確認する。
+
+\begin{figure}[hbtp]
+  \begin{center}
+    \includegraphics*[scale=0.5]{photo/4-15.png}
+  \end{center}
+  \caption{同期式RS-FF (指導書\cite[p.3-14]{degital}から引用)}
+  \label{fig:4-15}
+\end{figure}
+\paragraph{実験3の予習}
+\label{yosoku1}
+以下の真理値表\ref{tb:4-9}のように入力に対して出力を予想した。\\
+
+RS-FFはNANDを用いたものであることから、動作は実験2で行ったものの結果を参考に予想した。
+入力($S,R,C$)はすべてNANDに接続しているから、RS-FFの入力が若干変更することには気をつけた。
+入力1が2つの(ただし($S,R$)=(1,1)のときは安定状態)とき、どちらかの過度状態であり、1が1つ以下*入力されているときはNANDからの入力が絶対に1になることから安定状態と考えた。
+しかし、全ての入力が1の場合、NANDの出力が0になることからRS-FFは禁止状態で(X,Y)=(1,1)出力と予測した。
+今回の予測では禁止状態が2回発生し、その次の入力ではどちらも$C$が0に変化していた。
+このことからNANDからの出力が同時に0に変化するため($X,Y$)=(0,0)になると予測した。
+
+\begin{table}[hbtp]
+  \caption{実験3 入力と予測}
+  \centering
+  \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|} \hline
+    入 & $S$ & 0 & 0 & 0 & 0 & 0 & 1 & 1 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 0 & 0 & 0 \\ 
+       & $R$ & 1 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 1 & 1 & 1 & 1 & 1 & 0 & 0 & 0 & 1 & 1 & 1 & 1 & 1 & 1 \\ 
+    力 & $C$ & 1 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 1 & 0 \\ \hline\hline
+    結 & $X$ & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 1 & 1 & 1 & 1 & 1 & 0 & 0 & 0 & 1 & 0 & 0 & 1 & 1 & 1 & 1 & 0 & 0 & 0 & 0\\ 
+    果 & $Y$ & 1 & 1 & 1 & 1 & 1 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 1 & 1 & 1 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 1 & 1\\ \hline
+  \end{tabular}
+  \label{tb:4-9}
+\end{table}
+
+\paragraph{実験3の結果}
+以下のシミュレーター(図\ref{fig:4-16})および実機(図\ref{fig:4-17})で作成した回路で実行した際の真理値表をそれぞれ表\ref{tb:4-10}、\ref{tb:4-11}に記載する。
+実機において、入力の0番がS、1番がC、2番がRであり、出力の0番がX、1番がYに対応している。
+\textbf{また、表において*がついているものは発振状態であり、シミュレーションでは出力が定まらなかっため、ある出力を使用した。}
+ただ、実機では発振状態でも(0,0)しか出力されなかった。
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics*[]{photo/4-16.png}
+  \end{center}
+  \caption{実験3 シミュレーター作成した回路}
+  \label{fig:4-16}
+\end{figure}
+
+\begin{figure}[H]
+  \begin{center}
+    \includegraphics*[scale=0.12]{photo/4-17.jpg}
+  \end{center}
+  \caption{実験3 実機で作成した回路}
+  \label{fig:4-17}
+\end{figure}
+
+\begin{table}[H]
+  \caption{実験3 シミュレーションの結果}
+  \centering
+  \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|} \hline
+    入& $S$ & 0 & 0 & 0 & 0 & 0 & 1 & 1 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 0 & 0 & 0 \\ 
+      & $R$ & 1 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 1 & 1 & 1 & 1 & 1 & 0 & 0 & 0 & 1 & 1 & 1 & 1 & 1 & 1 \\ 
+    力& $C$ & 1 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 1 & 0 \\ \hline\hline
+    結& $X$ & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 1 & 1 & 1 & 1 & 1 & 0 & 0 & 0 & 1 & 0* & 1* & 1 & 1 & 1 & 1 & 1* & 0* & 0 & 0\\ 
+    果& $Y$ & 1 & 1 & 1 & 1 & 1 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 1 & 1 & 1 & 0* & 1* & 0 & 0 & 0 & 1 & 1* & 0* & 1 & 1\\ \hline
+  \end{tabular}
+  \label{tb:4-10}
+\end{table}
+
+\begin{table}[H]
+  \caption{実験3 実機の結果}
+  \centering
+  \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|} \hline
+     入 & $S$ & 0 & 0 & 0 & 0 & 0 & 1 & 1 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 0 & 0 & 0 \\ 
+        & $R$ & 1 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 1 & 1 & 1 & 1 & 1 & 0 & 0 & 0 & 1 & 1 & 1 & 1 & 1 & 1 \\ 
+     力 & $C$ & 1 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 1 & 0 \\ \hline\hline
+     結 & $X$ & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 1 & 1 & 1 & 1 & 1 & 0 & 0 & 0 & 1 & 0* & 0* & 1 & 1 & 1 & 1 & 0* & 0* & 0 & 0\\ 
+     果 & $Y$ & 1 & 1 & 1 & 1 & 1 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 1 & 1 & 1 & 0* & 0* & 0 & 0 & 0 & 1 & 0* & 0* & 1 & 1\\ \hline
+  \end{tabular}
+  \label{tb:4-11}
+\end{table}
+
+\paragraph{実験3の考察}
+\label{kousatu}
+予測と異なり、禁止状態後の出力が異なることが確認できた。
+結果から禁止状態後は「発振状態」になっていた。
+そもそも「発振」とは「論理設計 スイッチング回路理論」\cite[p.140]{ronnrise}によると、
+\begin{quote}
+  もし、ある入力の下で全ての状態が不安定ならば、その入力が続く限り状態遷移を繰り返す。
+  これを\textgt{発振}(oscillation)という。
+  また、ある入力の下で、いくつかの安定状態があっても、そこに決して到達しない場合も発振する。
+\end{quote}
+と記載してある。実際、RS-FFにも時間的な誤差を生じてしまいNANDからの出力が一斉に1にならずに。\ref*{fig:4-14}の過度状態1、危険状態、稼働状態2を行ったり来たりしているのではないかと考えた。
+このことから、参照部分の後半の動作が今回発生したのかなを思われる。
+
+\subsection{TTLの入出力特性の測定}
+(概要)\\
+信号発生器の制限は信号を作成する。以下の図\ref*{fig:4-18}の回路を構成し、
+NOT回路の入出力特性をオシロスコープで観察する。また得られた入出力特性のグラフから$V_{IL}$、$V_{IH}$、$V_{OL}$、$V_{OH}$を測定する。\\
+
+\paragraph{実験1の結果}
+\label{kekka}
+図\ref{fig:4-18}のような回路実機で図\ref*{fig:4-19}を作成した。
+その回路を300Hz、7.5Vで周波数発生装置を接続して(図\ref*{fig:4-20}を参照)動かした結果をオシロスコープの出力を\Erase{図\ref*{fig:4-21}に示す。}
+\Add{図\ref*{fig:4-19-0}、\ref*{fig:4-19-1}、\ref*{fig:4-19-2}に示す。また、この結果をもとに方眼紙に記入したものが図\ref*{fig:4-21}である。}
+図\ref*{fig:4-21}の横軸は時間、縦軸は電圧を表している。それぞれ1メモリの単位は、100\textmu s、1Vを表している。
+また、\ctext{1}はAB間、\ctext{2}はCB間、\ctext{3}はDB間のそれぞれのオシロスコープからの出力を表している。\\
+この表から以下のようなことが言える。\\
+
+AB間にて正弦波が観察されるのに対してCB間には電圧の負の部分が0Vと出力され、さらに振幅が3.5Vとなっている。
+前者に関しては、ダイオードを経由していることから順方向である正の電圧のみ出力し、負の電圧では何も出力していないからだと考えられる。
+後者に関して、抵抗を経由していることから電圧降下が発生したものと思われる。\textbf{CB間の(\ctext{2})波形の電圧がNOT回路への入力であるといえる。}\\
+
+CB間では波形が観察されていたのに対して、DB間では直線が観察され、さらに振幅が4.5Vとなっていた。
+前者に関しては、NOTゲートを通ったことで高電圧を低電圧に、低電圧を高電圧にする機能が働いたことで発生したものであると考えられる。
+この際、CB間波形の1.35Vにて変化が見られた。
+後者に関して、NOT回路からの出力の電圧が4.5Vと設定されているからだと考える。
+そのことから、$V_{OL}$、$V_{OH}$はそれぞれ0V、4.5Vであると推測する。
+
+\begin{figure}[hbtp]
+  \begin{center}
+    \includegraphics*[scale=0.7]{photo/4-18.png}
+  \end{center}
+  \caption{TTLの入出力測定回路 (指導書\cite[p.3-14]{degital}から引用)}
+  \label{fig:4-18}
+\end{figure}
+
+\begin{figure}[hbtp]
+  \begin{center}
+    \includegraphics*[scale=0.2]{photo/4-19.jpg}
+  \end{center}
+  \caption{実験3 作成した回路}
+  \label{fig:4-19}
+\end{figure}
+
+\begin{figure}[hbtp]
+  \begin{center}
+    \includegraphics*[scale=0.15]{photo/4-19-0.jpg}
+  \end{center}
+  \caption{\Add{実験3 AB間とCB間の測定結果}}
+  \label{fig:4-19-0}
+\end{figure}
+
+\begin{figure}[hbtp]
+  \begin{center}
+    \includegraphics*[scale=0.15]{photo/4-19-1.jpg}
+  \end{center}
+  \caption{\Add{実験3 CB間とDB間の測定結果}}
+  \label{fig:4-19-1}
+\end{figure}
+
+\begin{figure}[hbtp]
+  \begin{center}
+    \includegraphics*[scale=0.15]{photo/4-19-2.jpg}
+  \end{center}
+  \caption{\Add{実験3 EB間をX軸、DB間をY軸としたときの図}}
+  \label{fig:4-19-2}
+\end{figure}
+
+\begin{figure}[hbtp]
+  \begin{center}
+    \includegraphics*[scale=0.15]{photo/4-20.jpg}
+  \end{center}
+  \caption{実験3 周波数発生装置からの出力の値}
+  \label{fig:4-20}
+\end{figure}
+
+\begin{figure}[hbtp]
+  \begin{center}
+    \includegraphics*[scale=0.4]{photo/4-21.jpg}
+  \end{center}
+  \caption{実験3 各点の周波数を記録した結果} 
+  \label{fig:4-21}
+\end{figure}
+
+\clearpage
+
+さらに、X軸をEB間の出力、Y軸をDB間の出力としたときのオシロスコープの出力を図\ref{fig:4-22}に記載する。
+X軸の1メモリは0.05[V]、Y軸の1メモリは0.25[V]である。
+この表からX軸はNOT回路に入力される電圧、Y軸はNOT回路から出力される電圧といってもよく、
+「デジタル回路実験指導書」の図9「NOT回路(TTL)の入力特性」と同じものを表した図だと言える。
+この結果から、$V_{IN}$、$V_{OUT}$はそれぞれ0.78[V]、1.42[V]であり、絶対最大定格のグラフのMIN、MAX以内に収まっていた。
+また、$V_{OH}$は4.5[V]、$V_{OL}$は0.05[V]でほぼ0[V]と言っても良い。
+これらも十分に絶対最大定格に対応しているといえる。
+
+\begin{figure}[hbtp]
+  \begin{center}
+    \includegraphics*[scale=0.4]{photo/4-22.jpg}
+  \end{center}
+  \caption{実験3 リサージュ波形を記録した結果}
+  \label{fig:4-22}
+\end{figure}
+
+\newpage
+
+\section{考察}
+
+\subsection{論理式の簡単化}
+
+\subsubsection{課題1}
+
+\paragraph{概要}
+NANDのみ、または、NORのみでNOT回路を構成できる。NAND、NORそれぞれについて、NOR回路を構成する。
+また、ブール代数の公理を使い、これを証明する。
+
+\paragraph{解答}
+NANDのみNORのみそれぞれ以下の回路でNOT回路を構成できる。
+\ref*{label}は入力0のとき、\ref*{label}は入力1のときである。
+確かにこの回路でNOT回路を構成できている。
+この証明を数式4、数式5で行う。
+
+\begin{figure}[hbtp]
+  \centering
+  \begin{minipage}{0.4\columnwidth}
+    \centering
+    \includegraphics*[scale=0.7]{photo/5-1.png}
+    \label{fig:5-1}
+    \caption{0が入力された状態}
+  \end{minipage}
+  \begin{minipage}{0.4\columnwidth}
+    \centering
+    \includegraphics*[scale=0.7]{photo/5-2.png}
+    \caption{1が入力サれた状態}
+    \label{fig:5-2}
+  \end{minipage}
+\end{figure}
+
+(証明) 
+\begin{align}
+  \intertext{数式4}
+  \overline{A \cdot A} &= \overline{A} \vee \overline{A} \tag{ド・モルガン率}\\
+  &= \overline{A} \tag{べき等率}
+\end{align}
+\begin{align}
+  \intertext{数式5}
+  \overline{A \vee A} &= \overline{A} \cdot \overline{A} \tag{ド・モルガン率}\\
+  &= \overline{A} \tag{べき等律}
+\end{align}
+
+\subsection{加算機の構成}
+
+\subsubsection{課題1}
+
+\paragraph{概要}
+ブール代数の公理のみを用いて、式(4)(5)から、この回路の論理式を導く。
+
+\paragraph{解答}
+ページ\pageref*{syoumei}~の数式2、3\Erase{を参照}\Add{と同じものを下記に記載する}。
+\footnote{\Add{文書処理システムの処理上下記の数式2、3を赤文字に変更することができなかった。}}
+
+\begin{align}
+  \intertext{数式2} 
+  S &= A \cdot \overline{B} \vee \overline{A} \cdot B \notag \\
+  &= A \cdot \overline{A} \vee A \cdot \overline{B} \vee \overline{A} \cdot B \vee B \cdot \overline{B} \tag{相補率}\\
+  &= A \cdot (\overline{A} \vee \overline{B}) \vee B \cdot (\overline{A} \vee \overline{B}) \tag{分配率} \\
+  &= A \cdot \overline{A \cdot B} \vee B \cdot \overline{A \cdot B} \tag{ド・モルガン率}\\
+  &= \overline{\overline{A \cdot \overline{A \cdot B}}} \vee \overline{\overline{B \cdot \overline{A \cdot B}}} \tag{ド・モルガン率}\\
+  &= \overline{\overline{A \cdot \overline{A \cdot B}} \cdot \overline{B \cdot \overline{A \cdot B}}} \tag{ド・モルガン率}\\
+  \intertext{数式3}
+  C &= A \cdot B \notag \\
+  &= A \cdot B \vee A \cdot B \tag{べき等率}\\
+  &= \overline{\overline{A \cdot B}} \vee \overline{\overline{A \cdot B}} \tag{復元率}\\
+  &= \overline{\overline{A \cdot B} \cdot \overline{A \cdot B}} \tag{ド・モルガン率}
+\end{align} 
+
+
+\subsubsection{課題2}
+
+\paragraph{概要}
+予習2、実験2で構成した回路が全加算器となっていることを論理式を用いて証明する。
+
+\paragraph{解答}
+作成した全加算器は図\ref*{fig:4-6}である。\\
+(証明)\\
+1つ目の半加算器から出力された$S$を$S_1$、$C$を$C_1$とおく。
+\begin{align}
+  S_1 &= \overline{\overline{A \cdot \overline{A \cdot B}} \cdot \overline{B \cdot \overline{A \cdot B}}} \label{eq:10}\\
+  C_1 &= \overline{\overline{A \cdot B} \cdot \overline{A \cdot B}} \label{eq:11}
+\end{align}
+となる。出力する$S$、$C_{out}$は、
+\begin{align}
+  S &= \overline{\overline{S_1 \cdot \overline{S_1 \cdot C_{in}}} \cdot \overline{C \cdot \overline{S_1 \cdot C_{in}}}} \notag\\
+  &= S_1 \cdot \overline{S_1 \cdot C_{in}} \vee C \cdot \overline{S_1 \cdot C_{in}} \tag{ド・モルガン率}\\
+  &= S_1 \cdot (\overline{S_1} \vee \overline{C_{in}}) \vee C \cdot (\overline{S_1} \vee \overline{C_{in}}) \tag{ド・モルガン率}\\
+  &= S_1 \cdot \overline{S_1} \vee S_1 \cdot \overline{C_{in}} \vee \overline{S_1} \cdot C_{in} \vee C \cdot \overline{C_{in}} \tag{分配率}\\
+  &= S_{in} \cdot \overline{C_{in}} \vee \overline{S_1} \cdot C_{in} \tag{相補率}\\
+  &= \overline{\overline{A \cdot \overline{A \cdot B}} \cdot \overline{B \cdot \overline{A \cdot B}}} \cdot \overline{C_{in}} \vee \overline{\overline{\overline{A \cdot \overline{A \cdot B}} \cdot \overline{B \cdot \overline{A \cdot B}}}} \cdot C_{in} \tag{(\ref{eq:10})を代入}\\
+  &= (A \cdot (\overline{A}) \vee \overline{B}) \vee B \cdot (\overline{A} \vee \overline{B}) \cdot \overline{C_{in}} \vee (\overline{A \cdot \overline{A \cdot B}} \cdot \overline{B \cdot \overline{A \cdot B}}) \cdot  C_{in} \tag{ド・モルガン率}\ \\
+  &= A \cdot \overline{B} \cdot \overline{C_{in}} \vee \overline{A} \cdot B \cdot \overline{C_{in}} \vee (\overline{A} \vee \overline{\overline{A \cdot B}}) \cdot (\overline{B} \vee \overline{\overline{A \cdot B}}) \cdot C_{in} \tag{分配率}\\
+  &= A \cdot \overline{B} \cdot \overline{C_{in}} \vee \overline{A} \cdot B \cdot \overline{C_{in}} \vee (\overline{A} \vee A \cdot B) \cdot (\overline{B} \vee A \cdot B) \cdot C_{in} \tag{復元率}\\
+  &= A \cdot \overline{B} \cdot \overline{C_{in}} \vee \overline{A} \cdot B \cdot \overline{C_{in}} \vee (\overline{A} \cdot \overline{B} \vee A \cdot \overline{A} \cdot B \vee A \cdot B \cdot \overline{B} \vee A \cdot B) \cdot C_{in} \tag{分配率}\\
+  &= A \cdot \overline{B} \cdot \overline{C_{in}} \vee \overline{A} \cdot B \cdot \overline{C_{in}} \vee \overline{A} \cdot \overline{B} \cdot C_{in} \vee A \cdot B \cdot C_{in} \tag{相補率}\\
+  C_{out} &= C_{in} \vee \overline{\overline{S_1 \cdot C_{in}}\cdot \overline{S_1 \cdot C_{in}}} \notag\\
+  &= C_{in} \vee S_1 \cdot C_{in} \tag{ド・モルガン率等}\\
+  &= A \cdot B \vee (A \cdot (\overline{A} \vee \overline{B}) \vee B \cdot (\overline{A} \cdot \overline{B})) \cdot C_{in} \tag{(\ref{eq:11})を代入}\\
+  &= A \cdot B \vee A \cdot \overline{B} \cdot C_{in} \vee \overline{A} \cdot B \cdot C_{in} \tag{分配率} \\
+  &= A \cdot B \cdot C_{in} \vee A \cdot B \cdot \overline{C_{in}} \vee A \cdot \overline{B} \cdot C_{in} \vee \overline{A} \cdot B \cdot C_{in} \tag{相補率}
+\end{align}
+
+\subsection{RS-フリップフロップの構成}
+
+\subsubsection{課題1-1}
+
+\paragraph{概要}
+RSはRESET、SETの意味である理由。
+
+\paragraph{解答}
+表\ref{tb:4-6}における$X$を$Q$、$Y$を$\overline{Q}$とおくと、$S$が1と入力されると$Q$が1にセットされている。
+逆に$R$が1と入力されると、$Q$が0とリセットされている。
+このことから、Sをセット、RをリセットとするFFで有ることが言える。
+
+\subsubsection{課題1-2}
+
+\paragraph{概要}
+$R=S=1$は禁止入力と呼ばれる理由。
+
+\paragraph{解答}
+表\ref{tb:4-6}において、$R=S=1$のとき出力が$X=Y=1$となっている。
+しかし、課題1-1の解答で設定した$X$を$Q$、$Y$を$\overline{Q}$に関して反している。\\
+
+さらに、$R=S=1$の次に$R=S=0$が入力されるとその後の動作が2パターンある。それが、
+\begin{itemize}
+  \item $Q$が先に1になったあとに$Q=1$、$\overline{Q}=0$で安定状態になる。
+  \item $\overline{Q}$が先に1になった後に$Q=0$、$\overline{Q}=1$で安定状態になる。
+\end{itemize}
+であり、$R=S=1$の次の入力で不安定な状態となる可能性がある。したがって$R=S=1$は禁止状態であると言える。
+
+実際に、\ref*{4.6.3}の同期式RS-FFの出力において、禁止状態後の出力が発振となる事象が確認できた。
+
+\subsubsection{課題2}
+
+\paragraph{概要}
+図17の回路との動作の違いを説明する。
+
+\paragraph{解答}
+ページ\pageref*{kousatu2}~の「実験2の考察」の部分\Erase{を参照}\Add{と同じものを記載する}。
+\Add{
+  どちらの原因にもNOR、NANDの出力の仕方が関係していることがわかった。
+\ref*{tb:2-1}の真理値表を見てみると、入力の(0,0)(1,1)のときNOR、NANDの出力が同じである。
+過度状態では、全てのゲートのファンインの値が全く同じであるために同じ動作をすることが考えられる。
+例えば、$R$を1にしたとき、NORにおいて、$X$の出力に直接関わっているゲートのファンインはどちらも1である。
+NANDにおける回路でも同様で、$X$の出力に直接関わっているゲートのファンインはどちらも1であった。
+このことから、過度状態の入力、出力は一致すると考えられる。
+また、安定状態と禁止状態の入力が逆になることも真理値表から言える。
+NORでは1が1つでも入力されると0を出力してしまう。
+そのことから($R,S$)=(0,0)のとき、ゲートからの出力は絶対に0になってしまい、禁止状態になる。
+NANDでは0が1つでも入力されると1を出力してしまう。
+そのことから($R,S$)=(1,1)のとき、ゲートからの出力は絶対に1になってしまい、禁止状態になる。
+よって禁止状態が逆になることが考えられる。
+逆に安定状態に関していうと、NORにおいて($R,S$)=(1,0)のときから($R,S$)=(0,0)に変化したとしても、$R$につながるゲートにはすでに1が入力されており、出力が変わらない。
+NANDにおいて($R,S$)=(1,0)のときから($R,S$)=(1,1)に変化したとしても、$S$につながるゲートにはすでに0が入力されており、出力が変わらない。
+安定状態、禁止状態それぞれに注目して、安定状態と禁止状態が逆になる理由を考えた。
+}
+
+\subsubsection{課題3}
+
+\paragraph{概要}
+予測と実験結果がはっきりわかるように記載し、予測と異なる部分について、予測した理由と予測と異なる理由を説明する。
+ずべて予測どおりに動作した場合は、どのように予測したのかを説明する。
+
+\paragraph{解答}
+ページ\pageref*{yosoku1}の「実験3の予習」、ページ\pageref{kousatu}の「実験3の考察」\Erase{を参照}\Add{と同じものを下記に記載する}。
+\Add{
+  RS-FFはNANDを用いたものであることから、動作は実験2で行ったものの結果を参考に予想した。
+入力($S,R,C$)はすべてNANDに接続しているから、RS-FFの入力が若干変更することには気をつけた。
+入力1が2つの(ただし($S,R$)=(1,1)のときは安定状態)とき、どちらかの過度状態であり、1が1つ以下*入力されているときはNANDからの入力が絶対に1になることから安定状態と考えた。
+しかし、全ての入力が1の場合、NANDの出力が0になることからRS-FFは禁止状態で(X,Y)=(1,1)出力と予測した。
+今回の予測では禁止状態が2回発生し、その次の入力ではどちらも$C$が0に変化していた。
+このことからNANDからの出力が同時に0に変化するため($X,Y$)=(0,0)になると予測した。
+}
+
+\Add{結果に関しては予測と異なり、禁止状態後の出力が異なることが確認できた。
+結果から禁止状態後は「発振状態」になっていた。}
+
+\subsection{TTLの入出力特性の測定}
+
+\subsubsection{課題1}
+
+\paragraph{概要}
+図20の回路は、NOT回路への入力として、どのような波形の電圧を生成しているかを説明せよ。
+
+\paragraph{解答}
+ページ\pageref*{kekka}の「実験1の結果」の\textbf{太字}の部分\Erase{参照}\Add{と同じものをを記載する}。
+\Add{CB間の(\ctext{2})波形の電圧がNOT回路への入力である。
+入力の波形は正弦波の負の部分を0にしたものである。}
+
+\section{参考文献}
+
+\begin{thebibliography}{9}
+  \bibitem{degital} 九州工業大学, "デジタル回路実験指導書\_2023", 九州工業大学情報工学部moodle, 
+  https://ict-i.el.kyutech.ac.jp/mod/resource/view.php?id=9688, 
+  2023/07/02閲覧
+  \bibitem{report} 黒崎正行他, "情報通信工学実験 I デジタル回路レポート提出の手引き ver.1 (May 21st, 2021 版)", 九州工業大学 情報工学部 moodle,
+   2021, 2023/07/02閲覧
+  \bibitem{howto} 黒崎正行他, "シミュレーターの使い方や実験の注意事項", 九州工業大学情報工学部moodle, 
+  https://ict-i.el.kyutech.ac.jp/mod/resource/view.php?id=9690,
+   2023/07/02閲覧
+  \bibitem{computer} 橋本洋志・松本俊雄他, 『図解 コンピューター概論[ハードウェア] (改訂４版)』
+  オーム社, 2019年
+  \bibitem{logism} Logisim, "Oscillation errors", 
+  http://www.cburch.com/logisim/docs/2.7/en/html/guide/prop/oscillate.html, 
+  2023/07/02閲覧
+  \bibitem{ronnrise} 笹尾勤, 『論理設計――スイッチング回路理論――(第4版)』, 
+  近代科学社, 2022年
+  \bibitem{krrk} 「なんとなくわかる」大学数学・物理・情報, "RSフリップフロップで、S=1, R=1が「禁止」なのはなぜ？", 
+  https://www.krrk0.com/rs-flip-flops-prohibiting/, 
+  2023, 2023/07/02閲覧
+\end{thebibliography}
+
+\newpage
+
+\renewcommand{\thesection}{\Alph{section}}
+\setcounter{section}{0}
+\section{必須ではない実験課題}
+\label{Aiu}
+
+\subsection{8.1 論理式の簡単化}
+
+\subsubsection{$X = A \cdot (\overline{A} \vee B)$}
+
+\paragraph{実験2の予習}
+表\ref*{tb:A-2}は予習で作成した真理値表である。一番右側の$A \cdot B$は予習で簡単化したものの真
+理値表である。
+\begin{table}[hbtp]
+  \centering
+  \caption{実験2 予習}
+  \begin{tabular}{|c|c||c|c|c|c|} \hline
+    \multicolumn{2}{|c||}{入力} & \multicolumn{4}{c|}{出力} \\ \hline
+    $A$ & $B$ & $\overline{A}$ & $\overline{A} \vee B$ & $A \cdot (\overline{A} \vee B)$ & $A \cdot B$ \\ \hline
+    0 & 0 & 1 & 1 & 0 & 0 \\ \hline
+    0 & 1 & 1 & 1 & 0 & 0 \\ \hline
+    1 & 0 & 0 & 0 & 0 & 0 \\ \hline
+    1 & 1 & 0 & 1 & 1 & 1 \\ \hline
+  \end{tabular}
+  \label{tb:A-1}
+\end{table}
+
+また、簡単化の経緯を数式A-1に記載する。
+\begin{align}
+  X &= A \cdot (\overline{A} \vee B) \notag \\
+  &= A \cdot \overline{A} \vee A \cdot B \tag{分配率}\\
+  &= 0 \vee A \cdot B \tag{相補率}\\
+  &= A \cdot B \tag{相補率}
+\end{align}
+
+\paragraph{実験2の実験結果}
+実機においては時間が取れなかったためシミュレーターのみの結果を記載する。
+図\ref*{fig:A-1}の回路を作成した。下部の回路は簡単化したときの回路である。
+この回路を実行した結果をまとめた真理値表が、表\ref*{tb:A-2}である。
+
+\begin{figure}[hbtp]
+  \begin{center}
+    \includegraphics[scale=0.5]{photo/A-1.png}
+    \caption{実験2 作成した回路}
+    \label{fig:A-1}
+  \end{center}
+\end{figure}
+
+\begin{table}[hbtp]
+  \centering
+  \caption{実験2 結果}
+  \begin{tabular}{|c|c||c|c|c|c|} \hline
+    \multicolumn{2}{|c||}{入力} & \multicolumn{4}{c|}{シミュレーターの出力} \\ \hline
+    $A$ & $B$ & $\overline{A}$ & $\overline{A} \vee B$ & $A \cdot (\overline{A} \vee B)$ & $A \cdot B$ \\ \hline
+    0 & 0 & 1 & 1 & 0 & 0 \\ \hline
+    0 & 1 & 1 & 1 & 0 & 0 \\ \hline
+    1 & 0 & 0 & 0 & 0 & 0 \\ \hline
+    1 & 1 & 0 & 1 & 1 & 1 \\ \hline
+  \end{tabular}
+  \label{tb:A-2}
+\end{table}
+
+\paragraph{実験2の考察}
+結果より、簡単化の経緯及び簡単化した回路は正しいものであったといえる。
+
+\subsubsection{$X =A \cdot B \vee \overline{A} \cdot B \vee A \cdot \overline{B}$}
+
+\paragraph{実験3の予習}
+表\ref*{tb:A-3}は予習で作成した真理値表である。
+一番右側の$A \cdot B$は予習で簡単化したものの真理値表である。
+
+\begin{table}[h]
+  \begin{minipage}[c]{0.5\textwidth}
+    \centering
+    \caption{実験3の予習}
+    \begin{tabular}{|c|c||c|c|c|c|c|} \hline
+      \multicolumn{2}{|c||}{入力} & \multicolumn{5}{c|}{出力} \\ \hline
+      $A$ & $B$ & $A \cdot B$ & $\overline{A} \cdot B$ & $A \cdot \overline{B}$ & $X$ & $A \vee B$ \\ \hline
+      0 & 0 & 0 & 0 & 0 & 0 & 0\\ \hline
+      0 & 1 & 0 & 1 & 0 & 1 & 1\\ \hline
+      1 & 0 & 0 & 0 & 1 & 1 & 1\\ \hline
+      1 & 1 & 1 & 0 & 0 & 1 & 1\\ \hline
+    \end{tabular}
+    \label{tb:A-3}
+  \end{minipage}
+  \begin{minipage}[c]{0.5\textwidth}
+  \centering
+    \caption{カルノー図}
+    \begin{tabular}{|c|c|c|c|}\hline
+      \multicolumn{2}{|c|}{} & \multicolumn{2}{c|}{A}\\ \cline{3-4}
+      \multicolumn{2}{|c|}{} & 0 & 1\\ \hline
+          $B$ & 0 &  & 1\\ \cline{2-4}
+            & 1 & 1 & 1\\ \hline
+      \end{tabular}
+    \label{tb:A-4}
+  \end{minipage}
+\end{table}
+
+また、簡単化の方法はカルノー図である表\ref*{tb:A-4}を使用する。
+この場合、カルノー図で示した部分に1がでる。
+このカルノー図から最小論理和系を求めると、$A \vee B$という簡単化した式が得られる。
+
+\paragraph{実験3の結果}
+
+実験3でも実機で実験を行う時間がなかったためシミュレーターのみの結果である。
+図\ref*{fig:A-2}の回路を作成した。下部の回路は簡単化した場合の回路である。
+この回路を実行した結果をまとめた真理値表が、表\ref*{tb:A-5}である。
+
+\begin{figure}
+  \begin{center}
+    \includegraphics*[scale=0.5]{photo/A-2.png}
+  \end{center}
+  \caption{実験3 作成した回路}
+  \label{fig:A-2}
+\end{figure}
+
+\begin{table}
+  \centering
+  \caption{実験3 結果}
+  \begin{tabular}{|c|c||c|c|c|c|c|} \hline
+    \multicolumn{2}{|c||}{入力} & \multicolumn{5}{c|}{シミュレーターの出力} \\ \hline
+      $A$ & $B$ & $A \cdot B$ & $\overline{A} \cdot B$ & $A \cdot \overline{B}$ & $X$ & $A \vee B$ \\ \hline
+      0 & 0 & 0 & 0 & 0 & 0 & 0\\ \hline
+      0 & 1 & 0 & 1 & 0 & 1 & 1\\ \hline
+      1 & 0 & 0 & 0 & 1 & 1 & 1\\ \hline
+      1 & 1 & 1 & 0 & 0 & 1 & 1\\ \hline
+  \end{tabular}
+  \label{tb:A-5}
+\end{table}
+
+\paragraph{考察3}
+実験の結果から簡単化した式は正しいことが分かった。
+しかし、簡単化の経緯をプール代数の公式を用いて行う方法を思いつくことができなかった。
+
+\subsection{実験8.3 エンコーダ、デコーダの構成}
+
+\subsubsection{実験1 4-2エンコーダを構成し動作を確かめる}
+(概要)\\
+4-2エンコーダを構成し、動作を確かめる。
+
+\paragraph*{予習1}
+予習で作成した回路をシミュレーターで再現したものが\ref*{fig:A-3}である。
+実験はこの回路を用いて行った。
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics*[scale=0.5]{photo/A-3.png}
+  \end{center}
+  \caption{実験1 作成した回路}
+  \label{fig:A-3}
+\end{figure}
+
+\paragraph*{実験1}
+この実験はする必要がなかったため、実機では実験をしていない。
+そのためシミュレーターのみの結果である。
+結果を表\ref*{tb:A-6}に真理値表としてまとめた。
+$D_N$がそれぞれ$N$の10進数を表しており、
+$B_0, B_1$がその10進数を2進数で表す出力を出している。
+
+\begin{table}[hbtp]
+  \centering
+  \caption{実験1 結果}
+  \begin{tabular}{|c|c|c|c||c|c|} \hline
+    \multicolumn{4}{|c||}{入力} & \multicolumn{2}{c|}{シミュレーションの結果} \\ \hline
+    $D_0$ & $D_1$ & $D_2$ & $D_3$ & $B_1$ & $B_0$ \\ \hline
+    1 & 0 & 0 & 0 & 0 & 0 \\ \hline
+    0 & 1 & 0 & 0 & 0 & 1 \\ \hline
+    0 & 0 & 1 & 0 & 1 & 0 \\ \hline
+    0 & 0 & 0 & 1 & 1 & 1 \\ \hline
+  \end{tabular}
+  \label{tb:A-6}
+\end{table}
+
+\subsection{8.4 マルチプレクサ、デマルチプレクサの構成}
+
+\subsubsection{実験1}
+(概要)\\
+指導書\cite[p.3-12]{degital}表14のマルチプレクサを構成し、8.1 と同様に実験を行う。
+
+\paragraph*{実験1の予習、結果}
+以下の回路\ref*{fig:A-4}を作成した。
+この回路から表\ref*{tb:A-7}の真理値表を得られた。
+\begin{figure}[hbtp]
+  \begin{center}
+    \includegraphics*[scale=0.7]{photo/A-4.png}
+  \end{center}
+  \caption{実験1 作成した回路}
+  \label{fig:A-4}
+\end{figure}
+
+\begin{table}[hbtp]
+  \centering
+  \caption{実験1の結果}
+  \begin{tabular}{|c|c|c||c|} \hline
+    $S$ & $C_0$ & $C_1$ & $X$ \\ \hline\hline
+    0 & 0 & 0 & 0 \\ \hline
+    0 & 0 & 1 & 0 \\ \hline
+    0 & 1 & 0 & 1 \\ \hline
+    0 & 1 & 1 & 1 \\ \hline
+    1 & 0 & 0 & 0 \\ \hline
+    1 & 0 & 1 & 1 \\ \hline
+    1 & 1 & 0 & 0 \\ \hline
+    1 & 1 & 1 & 1 \\ \hline
+  \end{tabular}
+  \label{tb:A-7}
+\end{table}
+
+\paragraph*{実験1の考察}
+結果より、$S$が0で$C_0$に1が入力されると、1が出力され、$S$が1で$C_1$に1が入力されると、
+1が出力されていたことから指導書\cite{degital}における表14はのような真理値表になっていると言える。
+
+\subsubsection{実験2}
+(概要)\\
+指導書\cite[p.3-12]{degital}表15のデマルチプレクサを構成し、8.1と同様に実験を行う。
+\paragraph*{実験2の予習、結果}
+以下の図\ref*{fig:A-5}の回路を作成した。
+その回路から、表\ref*{tb:A-8}の真理値表を得られた。
+\begin{figure}[hbtp]
+  \begin{center}
+    \includegraphics*[scale=0.7]{photo/A-5.png}
+  \end{center}
+  \caption{実験2 作成した回路}
+  \label{fig:A-5}
+\end{figure}
+
+\begin{table}[hbtp]
+  \centering
+  \caption{実験2 結果}
+  \begin{tabular}{|c|c||c|c|}\hline
+    $S$ & $C$ & $X_0$ & $X_1$ \\ \hline\hline
+    0 & 0 & 0 & 0 \\ \hline
+    0 & 1 & 1 & 0 \\ \hline
+    1 & 0 & 0 & 0 \\ \hline
+    1 & 1 & 0 & 1 \\ \hline
+  \end{tabular}
+  \label{tb:A-8}
+\end{table}
+
+\paragraph*{実験2の考察}
+結果から、$S=0$のとき、$C$に1が入力されると$X_0$に1が出力され、
+$S=1$のとき、$C$に1が入力されると$X_1$に1が出力されている事がわかる。
+このことから指導書\cite{degital}における表15のような真理値表になっていると言える。
+
+\subsubsection{実験3}
+(概要)\\
+指導書\cite[p.3-11]{degital}表16に示すマルチプレクサを構成する。
+
+\paragraph*{実験3の予習、結果}
+以下の図\ref*{fig:A-6}の回路を作成した。
+この回路の結果から表\ref*{tb:A-9}の真理値表を得られる。
+ただし、レポートの関係上$X$の出力が1になるもののみ書いている。
+\begin{figure}[hbtp]
+  \begin{center}
+    \includegraphics*[scale=0.7]{photo/A-6.png}
+  \end{center}
+  \caption{実験3 作成した回路}
+  \label{fig:A-6}
+\end{figure}
+
+\begin{table}[hbtp]
+  \centering
+  \caption{実験3 結果}
+  \begin{tabular}{|c|c|c|c|c|c||c|} \hline
+    $S_1$ & $S_0$ & $C_0$ & $C_1$ & $C_2$ & $C_3$ & $X$ \\ \hline\hline
+    0 & 0 & 1 & 0 & 0 & 0 & 1 \\ \hline
+    0 & 1 & 0 & 1 & 0 & 0 & 1\\ \hline
+    1 & 0 & 0 & 0 & 1 & 0 & 1\\ \hline
+    1 & 1 & 0 & 0 & 0 & 1 & 1\\ \hline
+  \end{tabular}
+  \label{tb:A-9}
+\end{table}
+\paragraph*{実験3の考察}
+
+入力$C_0$~$C_1$の中から、入力$S_0$、$S_1$が表現する2進数に対応したときに$X$に出力1を出していることがわかる。
+このことから、この回路は正しいものであると言える。
+
+\subsubsection{実験4}
+(概要)\\
+指導書\cite[p.3-11]{degital}表17に示すデマルチプレクサを構成する。
+\paragraph*{実験4の予習、結果}
+以下の図\ref*{fig:A-7}の回路を作成した。
+この回路の結果から表\ref*{tb:A-10}の真理値表を得られた。
+この真理値表においても、どこかの出力で1が出力される部分しか書いていない。
+
+\begin{figure}[hbtp]
+  \begin{center}
+    \includegraphics*[scale=0.7]{photo/A-7.png}
+  \end{center}
+  \caption{実験4 作成した回路}
+  \label{fig:A-7}
+\end{figure}
+
+\begin{table}[hbtp]
+  \centering
+  \caption{実験4 結果}
+  \begin{tabular}{|c|c|c||c|c|c|c|} \hline
+    $S_1$ & $S_0$ & $C$ & $X_0$ & $X_1$ & $X_2$ & $X_3$ \\ \hline\hline
+    0 & 0 & 1 & 1 & 0 & 0 & 0 \\ \hline
+    0 & 1 & 1 & 0 & 1 & 0 & 0\\ \hline
+    1 & 0 & 1 & 0 & 0 & 1 & 0\\ \hline
+    1 & 1 & 1 & 0 & 0 & 0 & 1\\ \hline
+  \end{tabular}
+  \label{tb:A-10}
+\end{table}
+
+\paragraph*{実験4の考察}
+
+入力$S_0$、$S_1$が表現する2進数に対してCに$1$が入力されると、それに対応する1つ1を出力していることがわかるため、
+この論理回路は正しいものだと言える。
+
+\end{document}
