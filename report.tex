@@ -1,0 +1,126 @@
+\documentclass[twocolumn]{jsarticle}
+
+\usepackage{listings, jlisting, color}
+\usepackage[dvipdfmx]{graphicx}
+\usepackage{pdfpages}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{multirow}
+\usepackage{color}
+\usepackage{ulem}
+\usepackage{here}
+\usepackage{wrapfig}
+
+\newcommand{\Add}[1]{\textcolor{red}{#1}}
+\newcommand{\Erase}[1]{\textcolor{red}{\sout{\textcolor{black}{#1}}}}
+\newcommand{\ctext}[1]{\raise0.2ex\hbox{\textcircled{\scriptsize{#1}}}}
+
+\lstset{
+  basicstyle={\ttfamily},
+  identifierstyle={\small},
+  commentstyle={\smallitshape},
+  keywordstyle={\small\bfseries},
+  ndkeywordstyle={\small},
+  stringstyle={\small\ttfamily},
+  frame={tb},
+  breaklines=true,
+  columns=[l]{fullflexible},
+  numbers=left,
+  xrightmargin=0zw,
+  xleftmargin=3zw,
+  numberstyle={\scriptsize},
+  stepnumber=1,
+  numbersep=1zw,
+  lineskip=-0.5ex
+}
+
+\makeatletter % プリアンブルで定義開始
+
+% 表示文字列を"図"から"Figure”へ，"表"から"Table”へ
+\renewcommand{\figurename}{図}
+\renewcommand{\tablename}{表}
+
+% 図，表番号を"<章番号>.<図番号>” ，"<章番号>.<表番号>” へ
+\renewcommand{\thefigure}{\thesection-\arabic{figure}}
+\renewcommand{\thetable}{\thesection-\arabic{table}}
+
+% 章が進むごとに図番号をリセットする
+\@addtoreset{figure}{section}
+\@addtoreset{table}{section}
+
+\makeatother % プリアンブルで定義終了
+
+\begin{document}
+\twocolumn[
+  \title{テーマ3 コンピュータネットワーク実験}
+  \author{222C1021 今村優希}
+  \maketitle
+]
+
+\section{はじめに}
+ネットワークの発達によって、ユーザは自身の計算機を容易ネットワークに接続することができる。
+その仕組を小規模なネットワークを作成し、ネットワークの状況を確認することで理解する。
+
+\section{実験環境}
+今回作成したネットワークは図である。
+
+\begin{figure}[H]
+  \begin{center}
+    \includegraphics[scale=0.2]{graphic/1.png}
+  \end{center}
+  \caption{作成したネットワークのイメージ}
+  \label{fig:1}
+\end{figure}
+
+クライアントPC1のIPアドレスを"192.168.1.18"、
+クライアントPC2のIPアドレスを"192.168.3.21"に設定した。
+PC1からPC2に接続する際に2つのルーターを経由する。
+
+\section{実験方法}
+今回の実験ではTcpdumpコマンドを用いてWebデータ受信時の挙動について確認を行った。
+この実験を実施するために、まずはクライアントPC2をWebサーバーに設定した。
+次にダウンロード用のファイルをサーバー側で用意した。
+その後ログ取得のためにTcpdumpコマンドを実行した。
+
+それと同時にクライアントでもTcpdumpコマンドを実行し、
+wgetコマンドを用いてサーバー側で用意したファイルをダウンロードする。
+ダウンロードが終了したらTcpdumpを終わらせてログを取得する。
+
+以上の手順で実験を行った。
+
+\section{実験結果}
+クライアント側(IP: 192.186.1.18)で取得したログの一部を下記に記述する。\\
+{\scriptsize \texttt{15:19:21.915462 IP (tos 0x0, ttl 62, id 43096, offset 0, flags [DF], proto TCP (6), length 1012)\\
+  192.168.3.21.http > 192.168.1.18.49152: Flags [.], cksum 0x5e0e (correct), seq 310090316:310091276, ack 124, win 4113, options [nop,nop,TS val 394305168 ecr 20774075], length 960: HTTP\\
+・・・\\
+15:19:21.915562 IP (tos 0x0, ttl 64, id 57950, offset 0, flags [DF], proto TCP (6), length 52, bad cksum 0 (->d2ed)!)\\
+  192.168.1.18.49152 > 192.168.3.21.http: Flags [.], cksum 0x859e (incorrect -> 0x5877), ack 310091276, win 5542, options [nop,nop,TS val 20774077 ecr 394305168], length 0\\
+15:19:21.915595 IP (tos 0x0, ttl 62, id 8096, offset 0, flags [DF], proto TCP (6), length 1500)\\
+  192.168.3.21.http > 192.168.1.18.49152: Flags [.], cksum 0x5866 (correct), seq 310091276:310092724, ack 124, win 4113, options [nop,nop,TS val 394305168 ecr 20774075], length 1448: HTTP\\
+}}
+前半はサーバーからクライアントへデータを送信した際のログ、後半はクライアントからサーバーへデータを送信した際のログである。
+これらのログからACKの挙動に関して考察を行う。
+
+\section{考察}
+前半において、サーバーからクライアントにデータを送信しているログの中で、
+シーケンス番号が"seq 310090316:310091276"となっているため310090316から310091276のパケットを送信していると考えられる。
+そして、その時のACKが124であり、サーバーもACKを返していることが確認できた。
+また、length 1448とあるので1448 byteのデータが送信されたと考えられる。
+
+その後、クライアントがACKを返したあとに、再度サーバー側からクライアントへパケットを送信している。
+その際、"seq 310091276:310092724"という記述から310091276から310092724のパケットを送信している。
+
+ここで"310091276"という値に関して注目してみる。
+この数字はサーバー側からシーケンス番号として送信され、クライアントがACKとして返し、最後に再度サーバー側からシーケンス番号として送られている。
+これらの結果から、ACKはパケットを正式に受け取った場合に、パケットの中で一番最後の値、seq a:bで受け取った場合にbをACKとして返していると考えられる。
+
+さらに、遅延ACKの挙動に関して、サーバー側からクライアントへパケットを数回連続で送信し、クライアントからサーバー側に数回連続でACKを返す挙動を確認することができた。
+したがって、複数のパケットを一気に送る「スライディングウィンドウ」というものを使用していることが分かった。
+具体的にログの記録を確認すると、ある時間帯では11回のパケットを送信し、ACKを返したのが7回であることから、2回に1回程度ACKを返していることが確認できた。
+この動作を行うことで、ACKを返す回数が減るので、効率的にパケットを受信することができる事が考えられる。
+
+
+\section{まとめ}
+今回の実験では小規模なネットワークを構築し、データの送受信を通してネットワークの仕組みについて調べた。
+実際にACKやシーケンス番号の経緯を確認し、TcpdumpコマンドにてWebデータ受信時の挙動について調べた。
+\end{document}
